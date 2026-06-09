@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArboriGov SP - Sistema de Zeladoria Urbana Inteligente</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, #1e7e34 0%, #0066cc 100%);
+            color: white;
+            padding: 20px 0;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        header .content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .logo-icon {
+            font-size: 32px;
+        }
+
+        nav {
+            display: flex;
+            gap: 20px;
+        }
+
+        nav button {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        nav button:hover {
+            background: white;
+            color: #1e7e34;
+        }
+
+        nav button.active {
+            background: white;
+            color: #1e7e34;
+        }
+
+        /* Main Content */
+        .main {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .card h2 {
+            color: #1e7e34;
+            margin-bottom: 15px;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-icon {
+            font-size: 24px;
+        }
+
+        /* Stats */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #1e7e34;
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #1e7e34;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        /* Form */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #1e7e34;
+            box-shadow: 0 0 0 3px rgba(30, 126, 52, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        /* Buttons */
+        button {
+            background: linear-gradient(135deg, #1e7e34 0%, #0066cc 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(30, 126, 52, 0.3);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        button.secondary {
+            background: #f0f0f0;
+            color: #333;
+            border: 2px solid #ddd;
+        }
+
+        button.secondary:hover {
+            background: #e0e0e0;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 15px;
+        }
+
+        .modal-header h3 {
+            color: #1e7e34;
+            font-size: 22px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 28px;
+            color: #999;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close:hover {
+            color: #333;
+        }
+
+        /* List */
+        .list {
+            margin-top: 20px;
+        }
+
+        .list-item {
+            background: #f9f9f9;
+            border-left: 4px solid #1e7e34;
+            padding: 15px;
+            margin-bottom: 12px;
+            border-radius: 6px;
+            transition: all 0.3s;
+        }
+
+        .list-item:hover {
+            background: #f0f8f5;
+            box-shadow: 0 2px 8px rgba(30, 126, 52, 0.1);
+        }
+
+        .list-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .list-item-title {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-urgente {
+            background: #fee;
+            color: #c33;
+        }
+
+        .badge-preventivo {
+            background: #efe;
+            color: #3c3;
+        }
+
+        .badge-aberto {
+            background: #ffd;
+            color: #880;
+        }
+
+        .badge-concluido {
+            background: #dfd;
+            color: #080;
+        }
+
+        .list-item-description {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .list-item-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 12px;
+            color: #999;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 2000;
+            animation: slideIn 0.3s ease-out;
+            border-left: 4px solid #1e7e34;
+        }
+
+        .toast.error {
+            border-left-color: #c33;
+        }
+
+        .toast.success {
+            border-left-color: #3c3;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main {
+                grid-template-columns: 1fr;
+            }
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            header .content {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            nav {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            nav button {
+                width: 100%;
+            }
+        }
+
+        /* Loading Skeleton */
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .empty-state-text {
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        /* Photo preview */
+        .photo-preview {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .photo-item {
+            position: relative;
+            aspect-ratio: 1;
+            background: #f0f0f0;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px dashed #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .photo-item:hover {
+            border-color: #1e7e34;
+            background: #f9f9f9;
+        }
+
+        .photo-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .photo-item.empty {
+            color: #999;
+            font-size: 24px;
+        }
+
+        .photo-item.empty:hover {
+            color: #1e7e34;
+        }
+
+        .remove-photo {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            padding: 0;
+        }
+
+        .photo-item:hover .remove-photo {
+            display: flex;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            cursor: pointer;
+        }
+
+        .checkbox-group label {
+            margin: 0;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="content">
+            <div class="logo">
+                <span class="logo-icon">🌳</span>
+                <span>ArboriGov SP</span>
+            </div>
+            <nav>
+                <button class="nav-btn active" data-view="citizen">Cidadão</button>
+                <button class="nav-btn" data-view="manager">Gestor</button>
+                <button class="nav-btn" data-view="home">Home</button>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- HOME VIEW -->
+        <div id="home-view" class="view" style="display: none;">
+            <div class="card">
+                <h2><span class="card-icon">🌍</span> Bem-vindo ao ArboriGov SP</h2>
+                <p style="line-height: 1.6; color: #666;">
+                    ArboriGov SP é um sistema inteligente de zeladoria urbana que conecta cidadãos e gestores 
+                    para proteger as árvores de São Paulo. Reporte árvores com risco, acompanhe o status e 
+                    contribua para uma cidade mais verde e segura.
+                </p>
+                <div style="margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div style="padding: 15px; background: #f9f9f9; border-radius: 8px;">
+                        <div style="font-size: 28px; margin-bottom: 5px;">650K+</div>
+                        <div style="color: #666; font-size: 14px;">Árvores em SP</div>
+                    </div>
+                    <div style="padding: 15px; background: #f9f9f9; border-radius: 8px;">
+                        <div style="font-size: 28px; margin-bottom: 5px;">32</div>
+                        <div style="color: #666; font-size: 14px;">Subprefeituras</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CITIZEN VIEW -->
+        <div id="citizen-view" class="view">
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="stat-total">0</div>
+                    <div class="stat-label">Total de Chamados</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="stat-urgentes">0</div>
+                    <div class="stat-label">Urgentes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="stat-preventivos">0</div>
+                    <div class="stat-label">Preventivos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="stat-concluidos">0</div>
+                    <div class="stat-label">Concluídos</div>
+                </div>
+            </div>
+
+            <div class="main">
+                <div class="card">
+                    <h2><span class="card-icon">📝</span> Novo Chamado</h2>
+                    <form id="chamado-form">
+                        <div class="form-group">
+                            <label>Tipo de Risco</label>
+                            <select id="tipo" required>
+                                <option value="">Selecione...</option>
+                                <option value="preventivo">Preventivo</option>
+                                <option value="urgente">Urgente</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Descrição *</label>
+                            <textarea id="descricao" placeholder="Descreva o risco identificado..." required></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Endereço *</label>
+                            <input type="text" id="endereco" placeholder="Ex: Av. Paulista, 1000" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Subprefeitura</label>
+                            <select id="subprefeitura">
+                                <option value="">Selecione...</option>
+                                <option value="Pinheiros">Pinheiros</option>
+                                <option value="Vila Mariana">Vila Mariana</option>
+                                <option value="Butantã">Butantã</option>
+                                <option value="Lapa">Lapa</option>
+                            </select>
+                        </div>
+
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="contato-fiacao">
+                            <label for="contato-fiacao">Árvore em contato com fiação</label>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Fotos (até 3)</label>
+                            <div class="photo-preview" id="photo-preview">
+                                <div class="photo-item empty" onclick="document.getElementById('file-input').click()">
+                                    <span>📷</span>
+                                </div>
+                                <div class="photo-item empty"></div>
+                                <div class="photo-item empty"></div>
+                            </div>
+                            <input type="file" id="file-input" accept="image/*" style="display: none;">
+                        </div>
+
+                        <button type="submit" style="width: 100%; margin-top: 20px;">
+                            <span id="btn-text">Registrar Chamado</span>
+                        </button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h2><span class="card-icon">📋</span> Meus Chamados</h2>
+                    <div id="chamados-list" class="list"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MANAGER VIEW -->
+        <div id="manager-view" class="view" style="display: none;">
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="mgr-total">0</div>
+                    <div class="stat-label">Total de Chamados</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="mgr-abertos">0</div>
+                    <div class="stat-label">Abertos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="mgr-analise">0</div>
+                    <div class="stat-label">Em Análise</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="mgr-concluidos">0</div>
+                    <div class="stat-label">Concluídos</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2><span class="card-icon">📊</span> Todos os Chamados</h2>
+                <div style="margin-bottom: 20px; display: flex; gap: 10px;">
+                    <input type="text" id="search-input" placeholder="Buscar por localização..." style="flex: 1;">
+                    <select id="filter-status" style="flex: 0 0 150px;">
+                        <option value="">Todos os status</option>
+                        <option value="aberto">Aberto</option>
+                        <option value="em_analise">Em Análise</option>
+                        <option value="concluido">Concluído</option>
+                    </select>
+                </div>
+                <div id="all-chamados-list" class="list"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data storage
+        let chamados = [
+            {
+                id: 1,
+                tipo: 'urgente',
+                descricao: 'Árvore com galho quebrado próximo à fiação',
+                endereco: 'Av. Paulista, 1000',
+                subprefeitura: 'Pinheiros',
+                status: 'aberto',
+                data: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+                fotos: []
+            },
+            {
+                id: 2,
+                tipo: 'preventivo',
+                descricao: 'Árvore inclinada, necessário acompanhamento',
+                endereco: 'Rua Oscar Freire, 500',
+                subprefeitura: 'Pinheiros',
+                status: 'em_analise',
+                data: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+                fotos: []
+            },
+            {
+                id: 3,
+                tipo: 'urgente',
+                descricao: 'Árvore caída na rua',
+                endereco: 'Av. Brasil, 2000',
+                subprefeitura: 'Vila Mariana',
+                status: 'concluido',
+                data: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+                fotos: []
+            }
+        ];
+
+        let nextId = 4;
+        let userPhotos = [];
+
+        // Navigation
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+
+                const view = e.target.dataset.view;
+                document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
+                document.getElementById(view + '-view').style.display = 'block';
+
+                if (view === 'citizen') {
+                    updateCitizenView();
+                } else if (view === 'manager') {
+                    updateManagerView();
+                }
+            });
+        });
+
+        // Form submission
+        document.getElementById('chamado-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const tipo = document.getElementById('tipo').value;
+            const descricao = document.getElementById('descricao').value;
+            const endereco = document.getElementById('endereco').value;
+            const subprefeitura = document.getElementById('subprefeitura').value;
+
+            if (!tipo || !descricao || !endereco) {
+                showToast('Por favor, preencha todos os campos obrigatórios', 'error');
+                return;
+            }
+
+            const newChamado = {
+                id: nextId++,
+                tipo,
+                descricao,
+                endereco,
+                subprefeitura,
+                status: 'aberto',
+                data: new Date(),
+                fotos: userPhotos
+            };
+
+            chamados.push(newChamado);
+            userPhotos = [];
+
+            showToast('Chamado criado com sucesso!', 'success');
+            document.getElementById('chamado-form').reset();
+            document.getElementById('photo-preview').innerHTML = `
+                <div class="photo-item empty" onclick="document.getElementById('file-input').click()"><span>📷</span></div>
+                <div class="photo-item empty"></div>
+                <div class="photo-item empty"></div>
+            `;
+            updateCitizenView();
+        });
+
+        // File input
+        document.getElementById('file-input').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file && userPhotos.length < 3) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    userPhotos.push(event.target.result);
+                    updatePhotoPreview();
+                };
+                reader.readAsDataURL(file);
+            }
+            e.target.value = '';
+        });
+
+        function updatePhotoPreview() {
+            const preview = document.getElementById('photo-preview');
+            preview.innerHTML = '';
+
+            userPhotos.forEach((photo, index) => {
+                const item = document.createElement('div');
+                item.className = 'photo-item';
+                item.innerHTML = `
+                    <img src="${photo}" alt="Foto ${index + 1}">
+                    <button class="remove-photo" onclick="removePhoto(${index})">×</button>
+                `;
+                preview.appendChild(item);
+            });
+
+            for (let i = userPhotos.length; i < 3; i++) {
+                const item = document.createElement('div');
+                item.className = 'photo-item empty';
+                item.innerHTML = '<span>📷</span>';
+                item.onclick = () => document.getElementById('file-input').click();
+                preview.appendChild(item);
+            }
+        }
+
+        function removePhoto(index) {
+            userPhotos.splice(index, 1);
+            updatePhotoPreview();
+        }
+
+        // Search and filter
+        document.getElementById('search-input').addEventListener('input', updateManagerView);
+        document.getElementById('filter-status').addEventListener('change', updateManagerView);
+
+        function updateCitizenView() {
+            const userChamados = chamados;
+
+            document.getElementById('stat-total').textContent = userChamados.length;
+            document.getElementById('stat-urgentes').textContent = userChamados.filter(c => c.tipo === 'urgente').length;
+            document.getElementById('stat-preventivos').textContent = userChamados.filter(c => c.tipo === 'preventivo').length;
+            document.getElementById('stat-concluidos').textContent = userChamados.filter(c => c.status === 'concluido').length;
+
+            const list = document.getElementById('chamados-list');
+            if (userChamados.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📭</div>
+                        <div class="empty-state-text">Nenhum chamado registrado</div>
+                        <div style="font-size: 12px; color: #ccc;">Crie seu primeiro chamado acima</div>
+                    </div>
+                `;
+            } else {
+                list.innerHTML = userChamados.map(c => `
+                    <div class="list-item">
+                        <div class="list-item-header">
+                            <span class="list-item-title">${c.endereco}</span>
+                            <div>
+                                <span class="badge badge-${c.tipo}">${c.tipo.toUpperCase()}</span>
+                                <span class="badge badge-${c.status}" style="margin-left: 8px;">${c.status.replace('_', ' ').toUpperCase()}</span>
+                            </div>
+                        </div>
+                        <div class="list-item-description">${c.descricao}</div>
+                        <div class="list-item-meta">
+                            <span>📍 ${c.subprefeitura || 'Não informada'}</span>
+                            <span>📅 ${c.data.toLocaleDateString('pt-BR')}</span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function updateManagerView() {
+            const search = document.getElementById('search-input').value.toLowerCase();
+            const filterStatus = document.getElementById('filter-status').value;
+
+            let filtered = chamados.filter(c => {
+                const matchSearch = c.endereco.toLowerCase().includes(search);
+                const matchStatus = !filterStatus || c.status === filterStatus;
+                return matchSearch && matchStatus;
+            });
+
+            document.getElementById('mgr-total').textContent = chamados.length;
+            document.getElementById('mgr-abertos').textContent = chamados.filter(c => c.status === 'aberto').length;
+            document.getElementById('mgr-analise').textContent = chamados.filter(c => c.status === 'em_analise').length;
+            document.getElementById('mgr-concluidos').textContent = chamados.filter(c => c.status === 'concluido').length;
+
+            const list = document.getElementById('all-chamados-list');
+            if (filtered.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🔍</div>
+                        <div class="empty-state-text">Nenhum chamado encontrado</div>
+                    </div>
+                `;
+            } else {
+                list.innerHTML = filtered.map(c => `
+                    <div class="list-item">
+                        <div class="list-item-header">
+                            <span class="list-item-title">${c.endereco}</span>
+                            <div>
+                                <span class="badge badge-${c.tipo}">${c.tipo.toUpperCase()}</span>
+                                <span class="badge badge-${c.status}" style="margin-left: 8px;">${c.status.replace('_', ' ').toUpperCase()}</span>
+                            </div>
+                        </div>
+                        <div class="list-item-description">${c.descricao}</div>
+                        <div class="list-item-meta">
+                            <span>📍 ${c.subprefeitura || 'Não informada'}</span>
+                            <span>📅 ${c.data.toLocaleDateString('pt-BR')}</span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // Initial load
+        updateCitizenView();
+    </script>
+</body>
+</html>
