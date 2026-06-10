@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ArboriGov SP - Protótipo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --primary: #16a34a;
+      --primary-light: #dcfce7;
+      --primary-dark: #15803d;
+      --secondary: #0284c7;
+      --secondary-light: #e0f2fe;
+      --bg: #f8faf8;
+      --card: #ffffff;
+      --border: #e5e7eb;
+      --text: #1a1a1a;
+      --text-muted: #6b7280;
+      --red: #dc2626;
+      --red-light: #fef2f2;
+      --yellow: #d97706;
+      --yellow-light: #fffbeb;
+      --green: #16a34a;
+      --green-light: #f0fdf4;
+      --blue: #2563eb;
+      --blue-light: #eff6ff;
+      --orange: #ea580c;
+      --orange-light: #fff7ed;
+      --radius: 12px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.05);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+    /* Navigation */
+    .nav-tabs { display: flex; gap: 0; background: var(--card); border-bottom: 2px solid var(--border); position: sticky; top: 0; z-index: 100; }
+    .nav-tab { padding: 16px 28px; cursor: pointer; font-weight: 600; font-size: 14px; color: var(--text-muted); border: none; background: none; transition: all 0.2s; border-bottom: 3px solid transparent; margin-bottom: -2px; }
+    .nav-tab:hover { color: var(--primary); background: var(--primary-light); }
+    .nav-tab.active { color: var(--primary); border-bottom-color: var(--primary); background: var(--primary-light); }
+    .nav-tab-logo { display: flex; align-items: center; gap: 10px; padding: 10px 20px; font-weight: 700; font-size: 16px; color: var(--text); }
+    .nav-tab-logo img { height: 36px; width: 36px; }
+    .nav-tab-logo span { color: var(--secondary); }
+
+    /* Page sections */
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* ===== LANDING PAGE ===== */
+    .hero { background: linear-gradient(135deg, var(--primary-light) 0%, var(--bg) 50%, var(--secondary-light) 100%); padding: 80px 0; }
+    .hero-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
+    .hero-badge { display: inline-flex; align-items: center; gap: 8px; background: var(--primary-light); color: var(--primary); border: 1px solid rgba(22,163,74,0.3); border-radius: 50px; padding: 6px 16px; font-size: 13px; font-weight: 500; margin-bottom: 20px; }
+    .hero h1 { font-size: 52px; font-weight: 800; line-height: 1.1; margin-bottom: 20px; letter-spacing: -0.02em; }
+    .hero h1 .highlight { color: var(--primary); }
+    .hero p { font-size: 17px; color: var(--text-muted); max-width: 480px; margin-bottom: 28px; }
+    .hero-buttons { display: flex; gap: 12px; flex-wrap: wrap; }
+    .hero-logo-container { display: flex; justify-content: center; }
+    .hero-logo-wrapper { position: relative; }
+    .hero-logo-blur { position: absolute; inset: -20px; border-radius: 24px; background: linear-gradient(135deg, rgba(22,163,74,0.15), rgba(2,132,199,0.15)); filter: blur(30px); }
+    .hero-logo-wrapper img { position: relative; width: 280px; height: 280px; filter: drop-shadow(0 20px 40px rgba(0,0,0,0.1)); }
+
+    .stats-bar { background: var(--card); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 40px 0; }
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px; text-align: center; }
+    .stat-item svg { width: 24px; height: 24px; margin: 0 auto 8px; color: var(--primary); }
+    .stat-value { font-size: 28px; font-weight: 800; color: var(--text); }
+    .stat-label { font-size: 13px; color: var(--text-muted); }
+
+    .section { padding: 80px 0; }
+    .section-title { font-size: 32px; font-weight: 800; text-align: center; margin-bottom: 8px; }
+    .section-subtitle { font-size: 16px; color: var(--text-muted); text-align: center; max-width: 600px; margin: 0 auto 48px; }
+
+    .steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .step-card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow-lg); overflow: hidden; padding: 32px 24px; position: relative; transition: transform 0.2s, box-shadow 0.2s; }
+    .step-card:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+    .step-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--primary), var(--secondary)); }
+    .step-header { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+    .step-icon { width: 48px; height: 48px; border-radius: 12px; background: var(--primary-light); display: flex; align-items: center; justify-content: center; }
+    .step-icon svg { width: 24px; height: 24px; color: var(--primary); }
+    .step-number { font-size: 40px; font-weight: 800; color: rgba(22,163,74,0.15); }
+    .step-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+    .step-card p { font-size: 14px; color: var(--text-muted); }
+
+    .features-section { background: var(--card); }
+    .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .feature-card { border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; transition: border-color 0.2s; }
+    .feature-card:hover { border-color: rgba(22,163,74,0.4); }
+    .feature-icon { width: 40px; height: 40px; border-radius: 10px; background: var(--primary-light); display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
+    .feature-icon svg { width: 20px; height: 20px; color: var(--primary); }
+    .feature-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+    .feature-card p { font-size: 13px; color: var(--text-muted); }
+
+    .cta-section { padding: 80px 0; }
+    .cta-box { background: linear-gradient(135deg, var(--primary), var(--secondary)); border-radius: 24px; padding: 64px; text-align: center; position: relative; overflow: hidden; }
+    .cta-box h2 { font-size: 32px; font-weight: 800; color: white; margin-bottom: 16px; }
+    .cta-box p { color: rgba(255,255,255,0.8); font-size: 17px; max-width: 500px; margin: 0 auto 28px; }
+
+    .footer { border-top: 1px solid var(--border); background: var(--card); padding: 24px 0; }
+    .footer-content { display: flex; align-items: center; justify-content: space-between; }
+    .footer-brand { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; }
+    .footer-brand img { height: 24px; width: 24px; }
+    .footer-text { font-size: 13px; color: var(--text-muted); }
+
+    /* ===== BUTTONS ===== */
+    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; border: none; transition: all 0.2s; text-decoration: none; }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
+    .btn-outline:hover { background: var(--primary-light); border-color: var(--primary); color: var(--primary); }
+    .btn-white { background: white; color: var(--primary); }
+    .btn-white:hover { background: rgba(255,255,255,0.9); }
+    .btn-lg { padding: 14px 28px; font-size: 15px; }
+    .btn-sm { padding: 6px 14px; font-size: 12px; }
+    .btn-full { width: 100%; justify-content: center; }
+    .btn-danger { background: var(--red); color: white; }
+
+    /* ===== CARDS ===== */
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
+    .card-header { padding: 20px 24px 0; }
+    .card-title { font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+    .card-content { padding: 20px 24px; }
+
+    /* ===== BADGES ===== */
+    .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 50px; font-size: 11px; font-weight: 600; border: 1px solid; }
+    .badge-yellow { background: var(--yellow-light); color: var(--yellow); border-color: #fcd34d; }
+    .badge-blue { background: var(--blue-light); color: var(--blue); border-color: #93c5fd; }
+    .badge-orange { background: var(--orange-light); color: var(--orange); border-color: #fdba74; }
+    .badge-green { background: var(--green-light); color: var(--green); border-color: #86efac; }
+    .badge-red { background: var(--red-light); color: var(--red); border-color: #fca5a5; }
+    .badge-primary { background: var(--primary-light); color: var(--primary); border-color: rgba(22,163,74,0.3); }
+
+    /* ===== KPI CARDS ===== */
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .kpi-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); }
+    .kpi-label { font-size: 13px; color: var(--text-muted); margin-bottom: 4px; }
+    .kpi-value { font-size: 28px; font-weight: 800; }
+    .kpi-value.red { color: var(--red); }
+    .kpi-value.yellow { color: var(--yellow); }
+    .kpi-value.green { color: var(--green); }
+
+    /* ===== DASHBOARD ===== */
+    .dashboard-header { margin-bottom: 24px; }
+    .dashboard-header h1 { font-size: 24px; font-weight: 700; }
+    .dashboard-header p { color: var(--text-muted); font-size: 14px; }
+    .dashboard-header-row { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; }
+
+    /* ===== CHARTS ===== */
+    .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+    .chart-container { height: 300px; }
+
+    /* ===== TABLE ===== */
+    .data-table { width: 100%; text-align: left; font-size: 13px; border-collapse: collapse; }
+    .data-table th { padding: 12px 8px; font-weight: 500; color: var(--text-muted); border-bottom: 2px solid var(--border); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .data-table td { padding: 14px 8px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: rgba(22,163,74,0.03); }
+    .gut-score { font-weight: 800; font-size: 14px; }
+    .gut-high { color: var(--red); }
+    .gut-medium { color: var(--yellow); }
+    .gut-low { color: var(--green); }
+
+    /* ===== CHAMADO LIST ===== */
+    .chamado-item { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 12px; background: var(--card); transition: box-shadow 0.2s; }
+    .chamado-item:hover { box-shadow: var(--shadow-lg); }
+    .chamado-left { display: flex; align-items: flex-start; gap: 12px; flex: 1; }
+    .chamado-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .chamado-icon.preventivo { background: var(--primary-light); }
+    .chamado-icon.urgente { background: var(--red-light); }
+    .chamado-icon svg { width: 20px; height: 20px; }
+    .chamado-info { min-width: 0; }
+    .chamado-id { font-weight: 600; font-size: 14px; }
+    .chamado-desc { font-size: 13px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 400px; }
+    .chamado-addr { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 4px; margin-top: 2px; }
+    .chamado-addr svg { width: 12px; height: 12px; }
+
+    /* ===== FORM ===== */
+    .form-group { margin-bottom: 16px; }
+    .form-label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+    .form-input, .form-select, .form-textarea { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; font-family: inherit; background: var(--card); color: var(--text); transition: border-color 0.2s; }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(22,163,74,0.1); }
+    .form-textarea { resize: vertical; min-height: 80px; }
+    .form-row { display: flex; gap: 8px; }
+    .form-row .form-input { flex: 1; }
+    .form-hint { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+    .switch-row { display: flex; align-items: center; justify-content: space-between; border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+    .switch-label { font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+    .switch-hint { font-size: 11px; color: var(--text-muted); }
+    .switch { width: 44px; height: 24px; background: var(--border); border-radius: 12px; position: relative; cursor: pointer; transition: background 0.2s; flex-shrink: 0; }
+    .switch.on { background: var(--primary); }
+    .switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: white; border-radius: 50%; transition: transform 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+    .switch.on::after { transform: translateX(20px); }
+
+    .photo-upload { display: flex; gap: 8px; flex-wrap: wrap; }
+    .photo-placeholder { width: 80px; height: 80px; border: 2px dashed var(--border); border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: border-color 0.2s; }
+    .photo-placeholder:hover { border-color: var(--primary); }
+    .photo-placeholder svg { width: 24px; height: 24px; color: var(--text-muted); }
+
+    /* ===== MODAL ===== */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+    .modal-overlay.show { display: flex; }
+    .modal { background: var(--card); border-radius: 16px; width: 90%; max-width: 520px; max-height: 90vh; overflow-y: auto; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
+    .modal-header { padding: 24px 24px 0; display: flex; align-items: center; justify-content: space-between; }
+    .modal-title { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .modal-close { width: 32px; height: 32px; border-radius: 8px; border: none; background: var(--bg); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--text-muted); }
+    .modal-close:hover { background: var(--border); }
+    .modal-body { padding: 20px 24px 24px; }
+
+    /* ===== SLIDER ===== */
+    .slider-group { margin-bottom: 12px; }
+    .slider-header { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px; }
+    .slider-value { font-weight: 700; }
+    input[type="range"] { width: 100%; height: 6px; -webkit-appearance: none; background: var(--border); border-radius: 3px; outline: none; }
+    input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: var(--primary); border-radius: 50%; cursor: pointer; }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state { text-align: center; padding: 60px 20px; }
+    .empty-state svg { width: 48px; height: 48px; color: var(--border); margin: 0 auto 16px; }
+    .empty-state h3 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+    .empty-state p { font-size: 13px; color: var(--text-muted); }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+      .hero-grid { grid-template-columns: 1fr; }
+      .hero-logo-container { display: none; }
+      .hero h1 { font-size: 36px; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .steps-grid, .features-grid { grid-template-columns: 1fr; }
+      .charts-grid { grid-template-columns: 1fr; }
+      .nav-tab { padding: 12px 16px; font-size: 12px; }
+      .cta-box { padding: 40px 24px; }
+      .data-table { font-size: 12px; }
+    }
+
+    /* SVG Icons inline */
+    .icon { display: inline-block; vertical-align: middle; }
+  </style>
+</head>
+<body>
+
+  <!-- NAVIGATION TABS -->
+  <nav class="nav-tabs">
+    <div class="nav-tab-logo">
+      <img src="https://d2xsxph8kpxj0f.cloudfront.net/310419663029512752/bywWkV5nNqt34yhLM7Bvyz/arborigov_logo_1_5717deeb.png" alt="Logo">
+      ArboriGov <span>SP</span>
+    </div>
+    <button class="nav-tab active" onclick="showPage('landing')">Página Inicial</button>
+    <button class="nav-tab" onclick="showPage('citizen')">Painel do Cidadão</button>
+    <button class="nav-tab" onclick="showPage('manager')">Painel do Gestor</button>
+  </nav>
+
+  <!-- ===== PAGE 1: LANDING PAGE ===== -->
+  <div id="page-landing" class="page active">
+    <!-- Hero -->
+    <section class="hero">
+      <div class="container">
+        <div class="hero-grid">
+          <div>
+            <div class="hero-badge">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 10c.7-.7 1.69 0 2.5 0a2.5 2.5 0 1 0 0-5 .5.5 0 0 1-.5-.5 2.5 2.5 0 1 0-5 0c0 .81.7 1.8 0 2.5l-7 7c-.7.7-1.69 0-2.5 0a2.5 2.5 0 0 0 0 5c.28 0 .5.22.5.5a2.5 2.5 0 1 0 5 0c0-.81-.7-1.8 0-2.5Z"/></svg>
+              Zeladoria Urbana Inteligente
+            </div>
+            <h1>Proteja sua cidade. <span class="highlight">Reporte riscos</span> com um clique.</h1>
+            <p>Plataforma digital que conecta cidadãos e gestores públicos para a gestão inteligente de poda e remoção de árvores em São Paulo, prevenindo quedas de energia e acidentes.</p>
+            <div class="hero-buttons">
+              <button class="btn btn-primary btn-lg" onclick="showPage('citizen')">Acessar Painel →</button>
+              <button class="btn btn-outline btn-lg" onclick="document.getElementById('como-funciona').scrollIntoView({behavior:'smooth'})">Como Funciona</button>
+            </div>
+          </div>
+          <div class="hero-logo-container">
+            <div class="hero-logo-wrapper">
+              <div class="hero-logo-blur"></div>
+              <img src="https://d2xsxph8kpxj0f.cloudfront.net/310419663029512752/bywWkV5nNqt34yhLM7Bvyz/arborigov_logo_1_5717deeb.png" alt="ArboriGov SP">
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stats Bar -->
+    <section class="stats-bar">
+      <div class="container">
+        <div class="stats-grid">
+          <div class="stat-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            <div class="stat-value">470+</div>
+            <div class="stat-label">GovTechs no Brasil</div>
+          </div>
+          <div class="stat-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+            <div class="stat-value">32</div>
+            <div class="stat-label">Subprefeituras SP</div>
+          </div>
+          <div class="stat-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 10c.7-.7 1.69 0 2.5 0a2.5 2.5 0 1 0 0-5 .5.5 0 0 1-.5-.5 2.5 2.5 0 1 0-5 0c0 .81.7 1.8 0 2.5l-7 7c-.7.7-1.69 0-2.5 0a2.5 2.5 0 0 0 0 5c.28 0 .5.22.5.5a2.5 2.5 0 1 0 5 0c0-.81-.7-1.8 0-2.5Z"/></svg>
+            <div class="stat-value">650k+</div>
+            <div class="stat-label">Árvores urbanas</div>
+          </div>
+          <div class="stat-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+            <div class="stat-value">24/7</div>
+            <div class="stat-label">Monitoramento</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- How it Works -->
+    <section class="section" id="como-funciona">
+      <div class="container">
+        <h2 class="section-title">Como Funciona</h2>
+        <p class="section-subtitle">Em poucos passos, você reporta um risco e a prefeitura age com rapidez e transparência.</p>
+        <div class="steps-grid">
+          <div class="step-card">
+            <div class="step-header">
+              <div class="step-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+              </div>
+              <span class="step-number">01</span>
+            </div>
+            <h3>Reporte o Risco</h3>
+            <p>Tire uma foto da árvore, marque a localização e descreva o problema. O sistema classifica automaticamente a urgência.</p>
+          </div>
+          <div class="step-card">
+            <div class="step-header">
+              <div class="step-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+              <span class="step-number">02</span>
+            </div>
+            <h3>Acompanhe em Tempo Real</h3>
+            <p>Receba atualizações sobre o status do seu chamado: Aberto, Em Análise, Equipe em Deslocamento ou Concluído.</p>
+          </div>
+          <div class="step-card">
+            <div class="step-header">
+              <div class="step-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              </div>
+              <span class="step-number">03</span>
+            </div>
+            <h3>Problema Resolvido</h3>
+            <p>A equipe de zeladoria realiza a poda ou remoção. Você é notificado quando o serviço é concluído.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section class="section features-section">
+      <div class="container">
+        <h2 class="section-title">Funcionalidades</h2>
+        <p class="section-subtitle">Tecnologia a serviço da gestão pública e da segurança do cidadão.</p>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg></div>
+            <h3>Geolocalização</h3>
+            <p>Localização automática via GPS para identificar exatamente onde está o risco.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+            <h3>Classificação Inteligente</h3>
+            <p>O sistema classifica automaticamente entre chamados Urgentes e Preventivos.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></div>
+            <h3>Notificações</h3>
+            <p>Atualizações em tempo real sobre o andamento do seu chamado.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+            <h3>Relatórios Estatísticos</h3>
+            <p>Dashboards com gráficos de desempenho por subprefeitura e período.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+            <h3>Painel do Gestor</h3>
+            <p>Visão completa dos chamados com priorização pela Matriz GUT.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+            <h3>Integração Segura</h3>
+            <p>Dados protegidos conforme a LGPD com autenticação robusta.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-section">
+      <div class="container">
+        <div class="cta-box">
+          <h2>Sua cidade mais segura começa com você</h2>
+          <p>Junte-se a milhares de paulistanos que já estão transformando a gestão pública através da tecnologia.</p>
+          <button class="btn btn-white btn-lg" onclick="showPage('citizen')">Acessar Painel →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-brand">
+            <img src="https://d2xsxph8kpxj0f.cloudfront.net/310419663029512752/bywWkV5nNqt34yhLM7Bvyz/arborigov_logo_1_5717deeb.png" alt="Logo">
+            ArboriGov SP
+          </div>
+          <div class="footer-text">Projeto HackGov - Transformação Digital na Gestão Pública</div>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ===== PAGE 2: CITIZEN DASHBOARD ===== -->
+  <div id="page-citizen" class="page">
+    <div class="container" style="padding-top: 32px; padding-bottom: 48px;">
+      <div class="dashboard-header">
+        <div class="dashboard-header-row">
+          <div>
+            <h1>Meus Chamados</h1>
+            <p>Gerencie suas solicitações de poda e remoção de árvores</p>
+          </div>
+          <button class="btn btn-primary" onclick="openModal('modal-novo-chamado')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Novo Chamado
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI Cards -->
+      <div class="kpi-grid" style="grid-template-columns: repeat(3, 1fr);">
+        <div class="kpi-card">
+          <div class="kpi-label">Total</div>
+          <div class="kpi-value">5</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Em Andamento</div>
+          <div class="kpi-value yellow">3</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Concluídos</div>
+          <div class="kpi-value green">2</div>
+        </div>
+      </div>
+
+      <!-- Chamados List (Simulated) -->
+      <div id="citizen-chamados">
+        <div class="chamado-item">
+          <div class="chamado-left">
+            <div class="chamado-icon urgente"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+            <div class="chamado-info">
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                <span class="chamado-id">#1</span>
+                <span class="badge badge-red">Urgente</span>
+              </div>
+              <div class="chamado-desc">Árvore caiu sobre fiação elétrica após temporal, bloqueando a via</div>
+              <div class="chamado-addr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg> Av. Paulista, 1578 - Bela Vista</div>
+            </div>
+          </div>
+          <span class="badge badge-orange">⟳ Equipe em Deslocamento</span>
+        </div>
+
+        <div class="chamado-item">
+          <div class="chamado-left">
+            <div class="chamado-icon preventivo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2"><path d="M17 10c.7-.7 1.69 0 2.5 0a2.5 2.5 0 1 0 0-5 .5.5 0 0 1-.5-.5 2.5 2.5 0 1 0-5 0c0 .81.7 1.8 0 2.5l-7 7c-.7.7-1.69 0-2.5 0a2.5 2.5 0 0 0 0 5c.28 0 .5.22.5.5a2.5 2.5 0 1 0 5 0c0-.81-.7-1.8 0-2.5Z"/></svg></div>
+            <div class="chamado-info">
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                <span class="chamado-id">#2</span>
+                <span class="badge badge-primary">Preventivo</span>
+              </div>
+              <div class="chamado-desc">Galhos secos de grande porte sobre a calçada, risco de queda para pedestres</div>
+              <div class="chamado-addr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg> Rua Oscar Freire, 432 - Pinheiros</div>
+            </div>
+          </div>
+          <span class="badge badge-blue">🔍 Em Análise</span>
+        </div>
+
+        <div class="chamado-item">
+          <div class="chamado-left">
+            <div class="chamado-icon urgente"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+            <div class="chamado-info">
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                <span class="chamado-id">#3</span>
+                <span class="badge badge-red">Urgente</span>
+              </div>
+              <div class="chamado-desc">Raízes expostas levantaram calçada e árvore está inclinada sobre a rua</div>
+              <div class="chamado-addr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg> Rua Augusta, 2100 - Cerqueira César</div>
+            </div>
+          </div>
+          <span class="badge badge-yellow">⏳ Aberto</span>
+        </div>
+
+        <div class="chamado-item">
+          <div class="chamado-left">
+            <div class="chamado-icon preventivo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2"><path d="M17 10c.7-.7 1.69 0 2.5 0a2.5 2.5 0 1 0 0-5 .5.5 0 0 1-.5-.5 2.5 2.5 0 1 0-5 0c0 .81.7 1.8 0 2.5l-7 7c-.7.7-1.69 0-2.5 0a2.5 2.5 0 0 0 0 5c.28 0 .5.22.5.5a2.5 2.5 0 1 0 5 0c0-.81-.7-1.8 0-2.5Z"/></svg></div>
+            <div class="chamado-info">
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                <span class="chamado-id">#4</span>
+                <span class="badge badge-primary">Preventivo</span>
+              </div>
+              <div class="chamado-desc">Poda preventiva necessária - copa muito densa encostando na fiação</div>
+              <div class="chamado-addr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg> Rua Vergueiro, 3185 - Vila Mariana</div>
+            </div>
+          </div>
+          <span class="badge badge-green">✓ Concluído</span>
+        </div>
+
+        <div class="chamado-item">
+          <div class="chamado-left">
+            <div class="chamado-icon preventivo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2"><path d="M17 10c.7-.7 1.69 0 2.5 0a2.5 2.5 0 1 0 0-5 .5.5 0 0 1-.5-.5 2.5 2.5 0 1 0-5 0c0 .81.7 1.8 0 2.5l-7 7c-.7.7-1.69 0-2.5 0a2.5 2.5 0 0 0 0 5c.28 0 .5.22.5.5a2.5 2.5 0 1 0 5 0c0-.81-.7-1.8 0-2.5Z"/></svg></div>
+            <div class="chamado-info">
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                <span class="chamado-id">#5</span>
+                <span class="badge badge-primary">Preventivo</span>
+              </div>
+              <div class="chamado-desc">Árvore com tronco oco identificada próxima à escola municipal</div>
+              <div class="chamado-addr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg> Av. Santo Amaro, 1386 - Santo Amaro</div>
+            </div>
+          </div>
+          <span class="badge badge-green">✓ Concluído</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PAGE 3: MANAGER DASHBOARD ===== -->
+  <div id="page-manager" class="page">
+    <div class="container" style="padding-top: 32px; padding-bottom: 48px;">
+      <div class="dashboard-header">
+        <h1>Painel do Gestor</h1>
+        <p>Visão geral dos chamados e priorização por Matriz GUT</p>
+      </div>
+
+      <!-- KPI Cards -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">Total de Chamados</div>
+          <div class="kpi-value">156</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Urgentes</div>
+          <div class="kpi-value red">42</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Pendentes</div>
+          <div class="kpi-value yellow">89</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Concluídos</div>
+          <div class="kpi-value green">67</div>
+        </div>
+      </div>
+
+      <!-- Charts -->
+      <div class="charts-grid">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+              Chamados por Subprefeitura
+            </div>
+          </div>
+          <div class="card-content">
+            <div class="chart-container">
+              <canvas id="barChart"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              Distribuição por Status
+            </div>
+          </div>
+          <div class="card-content">
+            <div class="chart-container">
+              <canvas id="pieChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chamados Table -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Todos os Chamados (Prioridade GUT)
+          </div>
+        </div>
+        <div class="card-content">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Tipo</th>
+                <th>Cidadão</th>
+                <th>Endereço</th>
+                <th>Subprefeitura</th>
+                <th>GUT</th>
+                <th>Status</th>
+                <th>Ação</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>1</strong></td>
+                <td><span class="badge badge-red">Urgente</span></td>
+                <td style="color:var(--text-muted)">Maria Silva</td>
+                <td>Av. Paulista, 1578</td>
+                <td style="color:var(--text-muted)">Sé</td>
+                <td><span class="gut-score gut-high">125</span></td>
+                <td><span class="badge badge-orange">⟳ Equipe Desloc.</span></td>
+                <td><button class="btn btn-outline btn-sm" onclick="openModal('modal-gerenciar')">Gerenciar</button></td>
+              </tr>
+              <tr>
+                <td><strong>3</strong></td>
+                <td><span class="badge badge-red">Urgente</span></td>
+                <td style="color:var(--text-muted)">João Santos</td>
+                <td>Rua Augusta, 2100</td>
+                <td style="color:var(--text-muted)">Sé</td>
+                <td><span class="gut-score gut-high">100</span></td>
+                <td><span class="badge badge-yellow">⏳ Aberto</span></td>
+                <td><button class="btn btn-outline btn-sm" onclick="openModal('modal-gerenciar')">Gerenciar</button></td>
+              </tr>
+              <tr>
+                <td><strong>6</strong></td>
+                <td><span class="badge badge-red">Urgente</span></td>
+                <td style="color:var(--text-muted)">Ana Oliveira</td>
+                <td>Av. Rebouças, 3200</td>
+                <td style="color:var(--text-muted)">Pinheiros</td>
+                <td><span class="gut-score gut-high">75</span></td>
+                <td><span class="badge badge-blue">🔍 Em Análise</span></td>
+                <td><button class="btn btn-outline btn-sm" onclick="openModal('modal-gerenciar')">Gerenciar</button></td>
+              </tr>
+              <tr>
+                <td><strong>2</strong></td>
+                <td><span class="badge badge-primary">Preventivo</span></td>
+                <td style="color:var(--text-muted)">Carlos Mendes</td>
+                <td>Rua Oscar Freire, 432</td>
+                <td style="color:var(--text-muted)">Pinheiros</td>
+                <td><span class="gut-score gut-medium">45</span></td>
+                <td><span class="badge badge-blue">🔍 Em Análise</span></td>
+                <td><button class="btn btn-outline btn-sm" onclick="openModal('modal-gerenciar')">Gerenciar</button></td>
+              </tr>
+              <tr>
+                <td><strong>7</strong></td>
+                <td><span class="badge badge-primary">Preventivo</span></td>
+                <td style="color:var(--text-muted)">Pedro Lima</td>
+                <td>Rua Domingos de Morais, 800</td>
+                <td style="color:var(--text-muted)">Vila Mariana</td>
+                <td><span class="gut-score gut-medium">27</span></td>
+                <td><span class="badge badge-yellow">⏳ Aberto</span></td>
+                <td><button class="btn btn-outline btn-sm" onclick="openModal('modal-gerenciar')">Gerenciar</button></td>
+              </tr>
+              <tr>
+                <td><strong>8</strong></td>
+                <td><span class="badge badge-primary">Preventivo</span></td>
+                <td style="color:var(--text-muted)">Lucia Ferreira</td>
+                <td>Av. Interlagos, 4500</td>
+                <td style="color:var(--text-muted)">Santo Amaro</td>
+                <td><span class="gut-score gut-low">18</span></td>
+                <td><span class="badge badge-yellow">⏳ Aberto</span></td>
+                <td><button class="btn btn-outline btn-sm" onclick="openModal('modal-gerenciar')">Gerenciar</button></td>
+              </tr>
+              <tr>
+                <td><strong>4</strong></td>
+                <td><span class="badge badge-primary">Preventivo</span></td>
+                <td style="color:var(--text-muted)">Roberto Costa</td>
+                <td>Rua Vergueiro, 3185</td>
+                <td style="color:var(--text-muted)">Vila Mariana</td>
+                <td><span class="gut-score gut-low">12</span></td>
+                <td><span class="badge badge-green">✓ Concluído</span></td>
+                <td><button class="btn btn-outline btn-sm" onclick="openModal('modal-gerenciar')">Gerenciar</button></td>
+              </tr>
+              <tr>
+                <td><strong>5</strong></td>
+                <td><span class="badge badge-primary">Preventivo</span></td>
+                <td style="color:var(--text-muted)">Fernanda Souza</td>
+                <td>Av. Santo Amaro, 1386</td>
+                <td style="color:var(--text-muted)">Santo Amaro</td>
+                <td><span class="gut-score gut-low">9</span></td>
+                <td><span class="badge badge-green">✓ Concluído</span></td>
+                <td><button class="btn btn-outline btn-sm" onclick="openModal('modal-gerenciar')">Gerenciar</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL: NOVO CHAMADO ===== -->
+  <div class="modal-overlay" id="modal-novo-chamado">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2"><path d="M17 10c.7-.7 1.69 0 2.5 0a2.5 2.5 0 1 0 0-5 .5.5 0 0 1-.5-.5 2.5 2.5 0 1 0-5 0c0 .81.7 1.8 0 2.5l-7 7c-.7.7-1.69 0-2.5 0a2.5 2.5 0 0 0 0 5c.28 0 .5.22.5.5a2.5 2.5 0 1 0 5 0c0-.81-.7-1.8 0-2.5Z"/></svg>
+          Novo Chamado de Poda/Remoção
+        </div>
+        <button class="modal-close" onclick="closeModal('modal-novo-chamado')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Tipo do Chamado</label>
+          <select class="form-select">
+            <option value="preventivo">🌳 Preventivo (risco identificado)</option>
+            <option value="urgente">⚠️ Urgente (queda ocorrida)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Descrição do Problema</label>
+          <textarea class="form-textarea" placeholder="Descreva o problema observado com a árvore..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Endereço</label>
+          <input class="form-input" placeholder="Rua, número, bairro...">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Subprefeitura</label>
+          <select class="form-select">
+            <option value="">Selecione a subprefeitura</option>
+            <option>Aricanduva/Formosa/Carrão</option><option>Butantã</option><option>Campo Limpo</option>
+            <option>Capela do Socorro</option><option>Casa Verde/Cachoeirinha</option><option>Cidade Ademar</option>
+            <option>Ermelino Matarazzo</option><option>Freguesia/Brasilândia</option><option>Ipiranga</option>
+            <option>Jabaquara</option><option>Lapa</option><option>Mooca</option><option>Penha</option>
+            <option>Pinheiros</option><option>Pirituba/Jaraguá</option><option>Santana/Tucuruvi</option>
+            <option>Santo Amaro</option><option>São Mateus</option><option>Sé</option>
+            <option>Vila Maria/Vila Guilherme</option><option>Vila Mariana</option><option>Vila Prudente</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Geolocalização</label>
+          <div class="form-row">
+            <input class="form-input" placeholder="Latitude" value="-23.5613836">
+            <input class="form-input" placeholder="Longitude" value="-46.6560215">
+            <button class="btn btn-outline" style="flex-shrink:0;padding:10px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+            </button>
+          </div>
+          <div class="form-hint">Clique no ícone para capturar automaticamente</div>
+        </div>
+        <div class="form-group">
+          <div class="switch-row">
+            <div>
+              <div class="switch-label">⚡ Contato com Fiação Elétrica</div>
+              <div class="switch-hint">A árvore está em contato com fios de energia?</div>
+            </div>
+            <div class="switch" onclick="this.classList.toggle('on')"></div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Fotos (até 3)</label>
+          <div class="photo-upload">
+            <div class="photo-placeholder">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            </div>
+            <div class="photo-placeholder">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            </div>
+            <div class="photo-placeholder">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="alert('Chamado enviado com sucesso!'); closeModal('modal-novo-chamado');">Enviar Chamado</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL: GERENCIAR CHAMADO ===== -->
+  <div class="modal-overlay" id="modal-gerenciar">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">Gerenciar Chamado #1</div>
+        <button class="modal-close" onclick="closeModal('modal-gerenciar')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:20px;font-size:13px;line-height:1.8;">
+          <p><strong>Tipo:</strong> Urgente</p>
+          <p><strong>Endereço:</strong> Av. Paulista, 1578 - Bela Vista</p>
+          <p><strong>Subprefeitura:</strong> Sé</p>
+          <p><strong>Descrição:</strong> Árvore caiu sobre fiação elétrica após temporal, bloqueando a via</p>
+          <p><strong>Contato com fiação:</strong> Sim</p>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Atualizar Status</label>
+          <select class="form-select">
+            <option value="aberto">Aberto</option>
+            <option value="em_analise">Em Análise</option>
+            <option value="equipe_deslocamento" selected>Equipe em Deslocamento</option>
+            <option value="concluido">Concluído</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <textarea class="form-textarea" placeholder="Observação (opcional)" rows="2"></textarea>
+        </div>
+        <button class="btn btn-primary btn-full" style="margin-bottom:20px;" onclick="alert('Status atualizado!'); closeModal('modal-gerenciar');">Atualizar Status</button>
+
+        <div style="border:1px solid var(--border);border-radius:10px;padding:16px;">
+          <h4 style="font-size:14px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            Matriz GUT (Score: <span id="gut-display">125</span>)
+          </h4>
+          <div class="slider-group">
+            <div class="slider-header">
+              <span>Gravidade</span>
+              <span class="slider-value" id="g-val">5</span>
+            </div>
+            <input type="range" min="1" max="5" value="5" oninput="document.getElementById('g-val').textContent=this.value; updateGUT();">
+          </div>
+          <div class="slider-group">
+            <div class="slider-header">
+              <span>Urgência</span>
+              <span class="slider-value" id="u-val">5</span>
+            </div>
+            <input type="range" min="1" max="5" value="5" oninput="document.getElementById('u-val').textContent=this.value; updateGUT();">
+          </div>
+          <div class="slider-group">
+            <div class="slider-header">
+              <span>Tendência</span>
+              <span class="slider-value" id="t-val">5</span>
+            </div>
+            <input type="range" min="1" max="5" value="5" oninput="document.getElementById('t-val').textContent=this.value; updateGUT();">
+          </div>
+          <div class="form-group" style="margin-top:12px;">
+            <textarea class="form-textarea" placeholder="Observações do gestor" rows="2"></textarea>
+          </div>
+          <button class="btn btn-outline btn-full" onclick="alert('Priorização GUT salva!'); closeModal('modal-gerenciar');">Salvar Priorização GUT</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ===== PAGE NAVIGATION =====
+    function showPage(page) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+      document.getElementById('page-' + page).classList.add('active');
+      const tabs = document.querySelectorAll('.nav-tab');
+      const idx = { landing: 0, citizen: 1, manager: 2 };
+      tabs[idx[page]]?.classList.add('active');
+      window.scrollTo(0, 0);
+
+      // Initialize charts when manager page is shown
+      if (page === 'manager') {
+        setTimeout(initCharts, 100);
+      }
+    }
+
+    // ===== MODALS =====
+    function openModal(id) {
+      document.getElementById(id).classList.add('show');
+    }
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('show');
+    }
+    // Close modal on overlay click
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+      overlay.addEventListener('click', function(e) {
+        if (e.target === this) this.classList.remove('show');
+      });
+    });
+
+    // ===== GUT CALCULATOR =====
+    function updateGUT() {
+      const g = parseInt(document.getElementById('g-val').textContent);
+      const u = parseInt(document.getElementById('u-val').textContent);
+      const t = parseInt(document.getElementById('t-val').textContent);
+      document.getElementById('gut-display').textContent = g * u * t;
+    }
+
+    // ===== CHARTS =====
+    let barChartInstance = null;
+    let pieChartInstance = null;
+
+    function initCharts() {
+      // Bar Chart - Chamados por Subprefeitura
+      const barCtx = document.getElementById('barChart');
+      if (!barCtx) return;
+
+      if (barChartInstance) barChartInstance.destroy();
+      if (pieChartInstance) pieChartInstance.destroy();
+
+      barChartInstance = new Chart(barCtx, {
+        type: 'bar',
+        data: {
+          labels: ['Sé', 'Pinheiros', 'Vila Mariana', 'Santo Amaro', 'Butantã', 'Lapa', 'Mooca', 'Ipiranga'],
+          datasets: [
+            {
+              label: 'Total',
+              data: [32, 28, 22, 20, 16, 14, 13, 11],
+              backgroundColor: '#16a34a',
+              borderRadius: 4,
+            },
+            {
+              label: 'Concluídos',
+              data: [12, 10, 9, 11, 8, 6, 5, 6],
+              backgroundColor: '#0284c7',
+              borderRadius: 4,
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'top', labels: { font: { family: 'Inter', size: 12 } } }
+          },
+          scales: {
+            x: { ticks: { font: { family: 'Inter', size: 11 }, maxRotation: 45 }, grid: { display: false } },
+            y: { ticks: { font: { family: 'Inter', size: 11 } }, grid: { color: '#f0f0f0' } }
+          }
+        }
+      });
+
+      // Pie Chart - Distribuição por Status
+      const pieCtx = document.getElementById('pieChart');
+      pieChartInstance = new Chart(pieCtx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Aberto', 'Em Análise', 'Equipe Desloc.', 'Concluído'],
+          datasets: [{
+            data: [45, 24, 20, 67],
+            backgroundColor: ['#f59e0b', '#3b82f6', '#ea580c', '#22c55e'],
+            borderWidth: 2,
+            borderColor: '#fff',
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '55%',
+          plugins: {
+            legend: { position: 'bottom', labels: { font: { family: 'Inter', size: 12 }, padding: 16 } }
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>
