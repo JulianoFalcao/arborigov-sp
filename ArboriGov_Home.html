@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArboriGov SP - Zeladoria Urbana Inteligente</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            line-height: 1.6;
+            color: #1a1a1a;
+            background: #ffffff;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* NAVBAR */
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            border-bottom: 1px solid #e5e5e5;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            height: 64px;
+            display: flex;
+            align-items: center;
+        }
+
+        nav .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .navbar-brand img {
+            height: 40px;
+            width: 40px;
+        }
+
+        .navbar-brand span {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a1a1a;
+        }
+
+        .navbar-brand .sp {
+            color: #16a34a;
+        }
+
+        .navbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .navbar-actions .user-greeting {
+            font-size: 14px;
+            color: #666;
+            display: none;
+        }
+
+        @media (min-width: 640px) {
+            .navbar-actions .user-greeting {
+                display: inline;
+            }
+        }
+
+        /* BUTTONS */
+        button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: #0066cc;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0052a3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #0066cc;
+            border: 2px solid #0066cc;
+        }
+
+        .btn-outline:hover {
+            background: #0066cc;
+            color: white;
+        }
+
+        .btn-lg {
+            padding: 12px 24px;
+            font-size: 16px;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #0066cc;
+        }
+
+        .btn-secondary:hover {
+            background: #f5f5f5;
+        }
+
+        /* HERO SECTION */
+        .hero {
+            position: relative;
+            overflow: hidden;
+            padding: 80px 0 120px;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(0, 102, 204, 0.1) 0%, transparent 50%, rgba(34, 197, 94, 0.1) 100%);
+            pointer-events: none;
+        }
+
+        .hero .container {
+            position: relative;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 48px;
+            align-items: center;
+        }
+
+        @media (max-width: 768px) {
+            .hero .container {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-image {
+                display: none !important;
+            }
+        }
+
+        .hero-content {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid rgba(0, 102, 204, 0.3);
+            background: rgba(0, 102, 204, 0.1);
+            border-radius: 9999px;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #0066cc;
+            width: fit-content;
+        }
+
+        .hero h1 {
+            font-size: 56px;
+            font-weight: 700;
+            line-height: 1.2;
+            color: #1a1a1a;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 36px;
+            }
+        }
+
+        .hero h1 .highlight {
+            color: #0066cc;
+        }
+
+        .hero p {
+            font-size: 18px;
+            color: #666;
+            max-width: 500px;
+        }
+
+        .hero-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: fit-content;
+        }
+
+        @media (max-width: 640px) {
+            .hero-buttons {
+                flex-direction: column;
+            }
+
+            .hero-buttons button {
+                width: 100%;
+            }
+        }
+
+        .hero-image {
+            display: flex;
+            justify-content: center;
+            position: relative;
+        }
+
+        .hero-image::before {
+            content: '';
+            position: absolute;
+            inset: -16px;
+            border-radius: 24px;
+            background: linear-gradient(135deg, rgba(0, 102, 204, 0.2) 0%, rgba(34, 197, 94, 0.2) 100%);
+            filter: blur(32px);
+            z-index: -1;
+        }
+
+        .hero-image img {
+            height: 288px;
+            width: 288px;
+            filter: drop-shadow(0 20px 25px rgba(0, 0, 0, 0.15));
+        }
+
+        /* STATS SECTION */
+        .stats {
+            border-top: 1px solid #e5e5e5;
+            border-bottom: 1px solid #e5e5e5;
+            background: #f9fafb;
+            padding: 48px 0;
+        }
+
+        .stats .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 32px;
+        }
+
+        .stat-item {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .stat-icon {
+            height: 24px;
+            width: 24px;
+            margin: 0 auto;
+            color: #0066cc;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1a1a1a;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+        }
+
+        /* SECTION */
+        section {
+            padding: 80px 0;
+        }
+
+        section h2 {
+            font-size: 36px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 16px;
+        }
+
+        @media (max-width: 768px) {
+            section h2 {
+                font-size: 28px;
+            }
+        }
+
+        .section-subtitle {
+            font-size: 18px;
+            color: #666;
+            max-width: 600px;
+            margin: 0 auto 48px;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        /* HOW IT WORKS */
+        .how-it-works {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 32px;
+        }
+
+        .step-card {
+            border: 1px solid #e5e5e5;
+            border-radius: 12px;
+            padding: 32px;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .step-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #0066cc 0%, #22c55e 100%);
+        }
+
+        .step-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transform: translateY(-4px);
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .step-number {
+            font-size: 32px;
+            font-weight: 700;
+            color: rgba(0, 102, 204, 0.2);
+        }
+
+        .step-icon {
+            height: 48px;
+            width: 48px;
+            border-radius: 8px;
+            background: rgba(0, 102, 204, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0066cc;
+        }
+
+        .step-card h3 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 12px;
+        }
+
+        .step-card p {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        /* FEATURES */
+        .features {
+            background: #f9fafb;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .feature-card {
+            background: white;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            padding: 24px;
+            transition: all 0.3s;
+        }
+
+        .feature-card:hover {
+            border-color: rgba(0, 102, 204, 0.3);
+        }
+
+        .feature-icon {
+            height: 40px;
+            width: 40px;
+            border-radius: 8px;
+            background: rgba(0, 102, 204, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0066cc;
+            margin-bottom: 16px;
+        }
+
+        .feature-card h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+
+        .feature-card p {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        /* CTA SECTION */
+        .cta {
+            background: linear-gradient(135deg, #0066cc 0%, #22c55e 100%);
+            color: white;
+            border-radius: 24px;
+            padding: 64px 32px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzRoLTJ2LTRoMnYtNGgtNHYyaC00di0ySDIwdjRoMnY0aC0ydjRoNHYtMmg0djJoNHYtNGgtMnYtNHptMC04aDJ2LTRoLTJ2NHptLTgtOGgydi00aC0ydjR6Ii8+PC9nPjwvZz48L3N2Zz4=');
+            opacity: 0.2;
+        }
+
+        .cta .container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            align-items: center;
+        }
+
+        .cta h2 {
+            color: white;
+            font-size: 36px;
+        }
+
+        .cta p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 18px;
+            max-width: 500px;
+        }
+
+        /* FOOTER */
+        footer {
+            border-top: 1px solid #e5e5e5;
+            padding: 32px 0;
+            background: #f9fafb;
+        }
+
+        footer .container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        @media (min-width: 768px) {
+            footer .container {
+                flex-direction: row;
+            }
+        }
+
+        .footer-brand {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .footer-brand img {
+            height: 24px;
+            width: 24px;
+        }
+
+        .footer-brand span {
+            font-size: 14px;
+            font-weight: 500;
+            color: #1a1a1a;
+        }
+
+        .footer-text {
+            font-size: 14px;
+            color: #666;
+        }
+
+        /* ICONS */
+        .icon {
+            display: inline-block;
+            width: 1em;
+            height: 1em;
+            vertical-align: -0.125em;
+        }
+
+        @media (max-width: 768px) {
+            .hero {
+                padding: 40px 0 60px;
+            }
+
+            section {
+                padding: 40px 0;
+            }
+
+            .cta {
+                padding: 40px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- NAVBAR -->
+    <nav>
+        <div class="container">
+            <div class="navbar-brand">
+                <img src="https://d2xsxph8kpxj0f.cloudfront.net/310419663029512752/bywWkV5nNqt34yhLM7Bvyz/arborigov_logo_1_5717deeb.png" alt="ArboriGov SP">
+                <span>ArboriGov <span class="sp">SP</span></span>
+            </div>
+            <div class="navbar-actions">
+                <span class="user-greeting">Olá, Visitante</span>
+                <button class="btn-primary btn-lg">Entrar</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    🌳 Zeladoria Urbana Inteligente
+                </div>
+                <h1>Proteja sua cidade. <span class="highlight">Reporte riscos</span> com um clique.</h1>
+                <p>Plataforma digital que conecta cidadãos e gestores públicos para a gestão inteligente de poda e remoção de árvores em São Paulo, prevenindo quedas de energia e acidentes.</p>
+                <div class="hero-buttons">
+                    <button class="btn-primary btn-lg">Começar Agora →</button>
+                    <button class="btn-outline btn-lg" onclick="document.getElementById('como-funciona').scrollIntoView({behavior: 'smooth'})">Como Funciona</button>
+                </div>
+            </div>
+            <div class="hero-image">
+                <img src="https://d2xsxph8kpxj0f.cloudfront.net/310419663029512752/bywWkV5nNqt34yhLM7Bvyz/arborigov_logo_1_5717deeb.png" alt="ArboriGov SP">
+            </div>
+        </div>
+    </section>
+
+    <!-- STATS SECTION -->
+    <section class="stats">
+        <div class="container">
+            <div class="stat-item">
+                <div class="stat-icon">⚡</div>
+                <div class="stat-value">470+</div>
+                <div class="stat-label">GovTechs no Brasil</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon">📍</div>
+                <div class="stat-value">32</div>
+                <div class="stat-label">Subprefeituras SP</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon">🌳</div>
+                <div class="stat-value">650k+</div>
+                <div class="stat-label">Árvores urbanas</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon">👁️</div>
+                <div class="stat-value">24/7</div>
+                <div class="stat-label">Monitoramento</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section id="como-funciona">
+        <div class="container">
+            <div class="section-header">
+                <h2>Como Funciona</h2>
+                <p class="section-subtitle">Em poucos passos, você reporta um risco e a prefeitura age com rapidez e transparência.</p>
+            </div>
+            <div class="how-it-works">
+                <div class="step-card">
+                    <div class="step-header">
+                        <div class="step-icon">📍</div>
+                        <div class="step-number">01</div>
+                    </div>
+                    <h3>Reporte o Risco</h3>
+                    <p>Tire uma foto da árvore, marque a localização e descreva o problema. O sistema classifica automaticamente a urgência.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-header">
+                        <div class="step-icon">⏱️</div>
+                        <div class="step-number">02</div>
+                    </div>
+                    <h3>Acompanhe em Tempo Real</h3>
+                    <p>Receba atualizações sobre o status do seu chamado: Aberto, Em Análise, Equipe em Deslocamento ou Concluído.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-header">
+                        <div class="step-icon">🛡️</div>
+                        <div class="step-number">03</div>
+                    </div>
+                    <h3>Problema Resolvido</h3>
+                    <p>A equipe de zeladoria realiza a poda ou remoção. Você é notificado quando o serviço é concluído.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section class="features">
+        <div class="container">
+            <div class="section-header">
+                <h2>Funcionalidades</h2>
+                <p class="section-subtitle">Tecnologia a serviço da gestão pública e da segurança do cidadão.</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📍</div>
+                    <h3>Geolocalização</h3>
+                    <p>Localização automática via GPS para identificar exatamente onde está o risco.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Classificação Inteligente</h3>
+                    <p>O sistema classifica automaticamente entre chamados Urgentes e Preventivos.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔔</div>
+                    <h3>Notificações</h3>
+                    <p>Atualizações em tempo real sobre o andamento do seu chamado.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Relatórios Estatísticos</h3>
+                    <p>Dashboards com gráficos de desempenho por subprefeitura e período.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">👥</div>
+                    <h3>Painel do Gestor</h3>
+                    <p>Visão completa dos chamados com priorização pela Matriz GUT.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🛡️</div>
+                    <h3>Integração Segura</h3>
+                    <p>Dados protegidos conforme a LGPD com autenticação robusta.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta">
+        <div class="container">
+            <h2>Sua cidade mais segura começa com você</h2>
+            <p>Junte-se a milhares de paulistanos que já estão transformando a gestão pública através da tecnologia.</p>
+            <button class="btn-secondary btn-lg">Criar Conta Gratuita →</button>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="container">
+            <div class="footer-brand">
+                <img src="https://d2xsxph8kpxj0f.cloudfront.net/310419663029512752/bywWkV5nNqt34yhLM7Bvyz/arborigov_logo_1_5717deeb.png" alt="ArboriGov SP">
+                <span>ArboriGov SP</span>
+            </div>
+            <p class="footer-text">Projeto HackGov - Transformação Digital na Gestão Pública</p>
+        </div>
+    </footer>
+</body>
+</html>
