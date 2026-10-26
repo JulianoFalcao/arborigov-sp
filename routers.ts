@@ -24,6 +24,10 @@ import { nanoid } from "nanoid";
 import { invokeLLM } from "./_core/llm";
 import { buildStatisticalReport } from "./statistics";
 import { calculateGutScores } from "./risk";
+import { issueAnalysisAttestation, treeAnalysisSchema, verifyAnalysisAttestation } from "./ai-attestation";
+import { ENV } from "./_core/env";
+import { topPriority } from "./priority";
+import { buildAdvancedReport } from "./advanced-statistics";
 
 const MAX_BASE64_IMAGE_LENGTH = 7_000_000;
 const imageDataSchema = z.string()
@@ -84,7 +88,7 @@ export const appRouter = router({
           fotoBase64: imageDataSchema,
         })
       )
-      .mutation(async ({ input }) => {
+      .mutation(async ({ ctx, input }) => {
         try {
           // Converter base64 para URL de dados para enviar à IA
           const imageUrl = input.fotoBase64.startsWith("data:")
@@ -184,8 +188,14 @@ export const appRouter = router({
             throw new Error("Resposta inválida da IA");
           }
 
-          const analysis = JSON.parse(content);
-          return analysis;
+          const analysis = treeAnalysisSchema.parse(JSON.parse(content));
+          const iaAttestation = issueAnalysisAttestation({
+            userId: ctx.user.id,
+            image: input.fotoBase64,
+            analysis,
+            secret: ENV.cookieSecret,
+          });
+          return { ...analysis, iaAttestation };
         } catch (error) {
           console.error("Erro ao analisar imagem:", error);
           throw new TRPCError({
@@ -208,15 +218,26 @@ export const appRouter = router({
           fotoBase64: imageDataSchema.optional(),
           fotoBase64_2: imageDataSchema.optional(),
           fotoBase64_3: imageDataSchema.optional(),
-          // Análise de IA (opcional)
-          iaAnalysis: z.object({
-            saude_geral: z.string().optional(),
-            risco_queda: z.string().optional(),
-            recomendacoes: z.array(z.string()).optional(),
-          }).optional(),
+          iaAttestation: z.string().max(8192).optional(),
         })
       )
       .mutation(async ({ ctx, input }) => {
+        let verifiedAnalysis: ReturnType<typeof verifyAnalysisAttestation> | undefined;
+        if (input.iaAttestation) {
+          if (!input.fotoBase64) {
+            throw new TRPCError({ code: "BAD_REQUEST", message: "A triagem de IA requer a foto analisada" });
+          }
+          try {
+            verifiedAnalysis = verifyAnalysisAttestation({
+              token: input.iaAttestation,
+              userId: ctx.user.id,
+              image: input.fotoBase64,
+              secret: ENV.cookieSecret,
+            });
+          } catch {
+            throw new TRPCError({ code: "BAD_REQUEST", message: "Triagem inválida ou expirada; analise a foto novamente" });
+          }
+        }
         let fotoUrl: string | null = null;
         let fotoUrl2: string | null = null;
         let fotoUrl3: string | null = null;
@@ -243,7 +264,9 @@ export const appRouter = router({
         const { gravidade, urgencia, tendencia } = calculateGutScores({
           tipo: input.tipo,
           contatoFiacao: input.contatoFiacao,
-          iaAnalysis: input.iaAnalysis,
+          // O modelo não altera GUT se sua confiança informada for inferior a 60%.
+          iaAnalysis: verifiedAnalysis && verifiedAnalysis.analysis.confianca >= 0.6
+            ? verifiedAnalysis.analysis : undefined,
         });
 
         const id = await createChamado({
@@ -258,6 +281,10 @@ export const appRouter = router({
           fotoUrl,
           fotoUrl2,
           fotoUrl3,
+          iaSaude: verifiedAnalysis?.analysis.saude_geral ?? null,
+          iaRiscoQueda: verifiedAnalysis?.analysis.risco_queda ?? null,
+          iaConfianca: verifiedAnalysis ? verifiedAnalysis.analysis.confianca.toFixed(3) : null,
+          iaAnalisadoEm: verifiedAnalysis ? new Date(verifiedAnalysis.analyzedAt) : null,
           gravidade,
           urgencia,
           tendencia,
@@ -268,6 +295,7 @@ export const appRouter = router({
           action: "CHAMADO_CREATED",
           resourceId: id,
           requestId: requestIdFrom(ctx.req.headers),
+          metadata: { triagemIA: Boolean(verifiedAnalysis), iaInfluenciouGUT: Boolean(verifiedAnalysis && verifiedAnalysis.analysis.confianca >= 0.6) },
         });
 
         return { id, success: true };
@@ -369,6 +397,17 @@ export const appRouter = router({
     monthly: adminProcedure.query(() => getMonthlyStats()),
     summary: adminProcedure.query(async () => {
       return buildStatisticalReport(await getChamadosForStatistics());
+    }),
+    advanced: adminProcedure.query(async () => {
+      return buildAdvancedReport(await getChamadosForStatistics());
+    }),
+    priorityTop: adminProcedure.query(async () => {
+      return topPriority(await getChamadosForStatistics(), 5).map(item => ({
+        id: item.id,
+        gutScore: item.gutScore,
+        status: item.status,
+        subprefeitura: item.subprefeitura,
+      }));
     }),
   }),
 });

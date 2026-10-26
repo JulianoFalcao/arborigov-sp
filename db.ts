@@ -268,7 +268,7 @@ export async function getMonthlyStats() {
 
 export async function getChamadosForStatistics() {
   const db = await getDb();
-  if (!db) return [];
+  if (!db) throw new Error("Database unavailable for statistical report");
   return db.select({
     id: chamados.id,
     status: chamados.status,
